@@ -54,6 +54,7 @@ const Dashboard = ({user}: DashboardProps) => {
 
     const response = await axios.post(`${apiUrl}/users/logout`)
     localStorage.removeItem('token')
+    localStorage.removeItem('tokenExpiry')
     navigate('/signin')
     return response.data
   }

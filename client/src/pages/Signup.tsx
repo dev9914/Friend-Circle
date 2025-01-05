@@ -51,6 +51,7 @@ const Signup = () => {
       setUsername("")
       navigate('/')
       localStorage.setItem("token", response.data.token)
+      localStorage.setItem("tokenExpiry", "15d")
       return response.data
     } catch (error) {
       console.log(error)
