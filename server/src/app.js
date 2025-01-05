@@ -5,7 +5,7 @@ import cookieParser from 'cookie-parser';
 const app = express();
 
 app.use(cors({
-    origin: ['http://localhost:4000','https://e-commerce-payment-gate-way-razor-pay-u1l4.onrender.com'],
+    origin: ['http://localhost:4000','https://friend-circle-frontend.onrender.com'],
     methods:['GET,PATCH,POST,DELETE,PUT'],
     credentials: true,
   }
