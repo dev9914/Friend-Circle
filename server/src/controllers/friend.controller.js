@@ -105,39 +105,49 @@ export const rejectFriendRequest = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
-export const recommendFriends = async (req, res) => {
+export const getFriends = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    const friends = await User.findById(userId).populate('friends')
+
+
+    res.status(200).json({ friends});
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
+export const recommendFriendsByInterests = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find the current user
     const user = await User.findById(userId).populate('friends');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    const recommendations = [];
-    const userFriendSet = new Set(user.friends.map(f => f._id.toString()));
-    for (const friend of user.friends) {
-      for (const friendOfFriend of friend.friends) {
-        if (!userFriendSet.has(friendOfFriend.toString())) {
-          const friendData = await User.findById(friendOfFriend).populate('friends').select('name interests');
-          const commonInterests = friendData.interests.filter(interest => user.interests.includes(interest));
+    // Create a set of friends' IDs for easy lookup
+    const userFriendSet = new Set(user.friends.map(friend => friend._id.toString()));
 
-          if (commonInterests.length > 0) {
-            recommendations.push({
-              friend: friendData,
-              commonInterests: commonInterests,
-            });
-          }
-        }
-      }
-    }
+    // Find users with similar interests and not already friends
+    const recommendations = await User.find({
+      _id: { $ne: userId, $nin: Array.from(userFriendSet) }, // Exclude current user and friends
+      interests: { $in: user.interests } // Match users with similar interests
+    }).select('username fullName email interests'); // Select only the required fields
 
-    const limitedRecommendations = recommendations.slice(0, 10); // Limit to 10 recommendations
+    // Limit recommendations to 10
+    const limitedRecommendations = recommendations.slice(0, 10);
 
     res.status(200).json(limitedRecommendations);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+
+
+
 

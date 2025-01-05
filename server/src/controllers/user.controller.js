@@ -66,12 +66,45 @@ export const login = async (req, res) => {
   }
 };
 
+export const getuser = async (req, res) => {
+  try {
+
+    const userId = req.user._id;
+    const user = await User.findById(userId).select("-password")
+
+    if(!user) {
+      res.status(404).json({message: "User does not found"})
+    }
+    res.status(201).json(user)
+    
+  } catch (error) {
+    console.log("Error in login controller", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+export const getuserbyId = async (req, res) => {
+  try {
+
+    const {userId} = req.params;
+    const user = await User.findById(userId).select("-password")
+
+    if(!user) {
+      res.status(404).json({message: "User does not found"})
+    }
+    res.status(201).json(user)
+    
+  } catch (error) {
+    console.log("Error in login controller", error.message);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
+
 export const logout = (req, res) => {
   try {
-    res.cookie("jwt", "", {maxAge: 0});
-    res.status(200).json({message: "Logged out succesfully"});
+    res.cookie("jwt", "", { maxAge: 0, httpOnly: true, sameSite: 'Strict' });
+    res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
-    console.log("Error in logout controller", error.message);
+    console.log("Error in logout controller:", error.message);
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
