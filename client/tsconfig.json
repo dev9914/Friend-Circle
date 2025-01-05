@@ -5,12 +5,11 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
-    "skipLibCheck": true,       // Skip type checking of declaration files
-    "noEmit": true,             // Prevent TypeScript from emitting output files
-    "strict": false,            // Disable all strict type checking options
-    "noImplicitAny": false,     // Allow expressions and declarations to have an 'any' type
-    "noUncheckedIndexedAccess": false, // Disable checking for indexes
-    "skipDefaultLibCheck": true // Skip type checking of default library declarations
+    "skipLibCheck": true,
+    "noEmit": true,            
+    "strict": false,      
+    "noImplicitAny": false,     
+    "skipDefaultLibCheck": true
   }
 }
 
