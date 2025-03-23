@@ -1,40 +1,27 @@
-name: CI/CD Pipeline
+name: Deploy to Render
 
 on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
 
 jobs:
-  build:
+  deploy-client:
+    name: Deploy Client
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4  # Use latest v4
+      - name: Trigger Client Deployment
+        run: |
+          curl -X POST "https://api.render.com/v1/services/YOUR_CLIENT_SERVICE_ID/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
 
-      - name: Setup Node
-        uses: actions/setup-node@v3  # Use latest v3
-        with:
-          node-version: 16
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Client
-        run: npm run build
-        working-directory: client  # Ensure this is the correct path
-
-      - name: Upload Client Build
-        uses: actions/upload-artifact@v3  # Use latest v3
-        with:
-          name: client-build
-          path: client/dist
-
-      - name: Download Client Artifact
-        uses: actions/download-artifact@v3  # Use latest v3
-        with:
-          name: client-build
-          path: ./client-build
+  deploy-server:
+    name: Deploy Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Server Deployment
+        run: |
+          curl -X POST "https://api.render.com/v1/services/YOUR_SERVER_SERVICE_ID/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
