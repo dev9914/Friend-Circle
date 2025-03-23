@@ -1,118 +1,13 @@
-name: Build & Deploy
-
-on:
-  push:
-    branches:
-      - main
-
-env:
-  CI: false
-
+name: Test Workflow
+on: push
 jobs:
-  build-client:
-    name: Build Client
+  test:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Setup Node
-        uses: actions/setup-node@v1
+      - name: Test Upload
+        uses: actions/upload-artifact@v2
         with:
-          node-version: 16
-
-      - name: Install Client Dependencies
-        run: |
-          cd client
-          npm install
-
-      - name: Build Client
-        run: |
-          cd client
-          npm run build
-        env:
-          VITE_API_URL: ${{ secrets.VITE_API_URL }}
-
-      - name: Upload Client Build
-        uses: actions/upload-artifact@v3
-        with:
-          name: client-build
-          path: client/dist
-
-  build-server:
-    name: Build Server
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Setup Node
-        uses: actions/setup-node@v1
-        with:
-          node-version: 16
-
-      - name: Install Server Dependencies
-        run: |
-          cd server
-          npm install
-
-      - name: Run Server Tests
-        run: |
-          cd server
-          npm test
-
-      - name: Upload Server Build
-        uses: actions/upload-artifact@v3
-        with:
-          name: server-build
-          path: server  
-
-  deploy-client:
-    name: Deploy Client
-    needs: build-client
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Download Client Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: client-build
-          path: ./client-build
-
-      - name: Deploy Client to Render
-        run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
-            -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
-
-          if [[ "$RESPONSE" -ne 200 ]]; then
-            echo "Client deployment failed with status: $RESPONSE"
-            exit 1
-          fi
-
-  deploy-server:
-    name: Deploy Server
-    needs: build-server
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Download Server Artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: server-build
-          path: ./server-build
-
-      - name: Deploy Server to Render
-        run: |
-          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
-            -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
-
-          if [[ "$RESPONSE" -ne 200 ]]; then
-            echo "Server deployment failed with status: $RESPONSE"
-            exit 1
-          fi
+          name: test-file
+          path: README.md
