@@ -35,10 +35,10 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Upload Client Build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: client-build
-          path: client/dist  # Ensure this is the correct build output path
+          path: client/dist
 
   build-server:
     name: Build Server
@@ -59,10 +59,10 @@ jobs:
           npm install
 
       - name: Upload Server Build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: server-build
-          path: server  # No build step needed for Node.js (unless using TypeScript)
+          path: server  
 
   deploy-client:
     name: Deploy Client
@@ -71,6 +71,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Download Client Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+          path: ./client-build
+
       - name: Deploy Client to Render
         run: |
           curl -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
@@ -84,6 +93,15 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Download Server Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: server-build
+          path: ./server-build
+
       - name: Deploy Server to Render
         run: |
           curl -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
