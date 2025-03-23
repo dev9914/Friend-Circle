@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Trigger Client Deployment
         run: |
-          curl -X POST "https://api.render.com/v1/services/YOUR_CLIENT_SERVICE_ID/deploys" \
+          curl -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
             -H "Accept: application/json" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
 
@@ -22,6 +22,6 @@ jobs:
     steps:
       - name: Trigger Server Deployment
         run: |
-          curl -X POST "https://api.render.com/v1/services/YOUR_SERVER_SERVICE_ID/deploys" \
+          curl -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
             -H "Accept: application/json" \
             -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
