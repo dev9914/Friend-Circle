@@ -58,6 +58,11 @@ jobs:
           cd server
           npm install
 
+      - name: Run Server Tests
+        run: |
+          cd server
+          npm test
+
       - name: Upload Server Build
         uses: actions/upload-artifact@v3
         with:
@@ -71,9 +76,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
       - name: Download Client Artifact
         uses: actions/download-artifact@v3
         with:
@@ -82,9 +84,14 @@ jobs:
 
       - name: Deploy Client to Render
         run: |
-          curl -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
             -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+
+          if [[ "$RESPONSE" -ne 200 ]]; then
+            echo "Client deployment failed with status: $RESPONSE"
+            exit 1
+          fi
 
   deploy-server:
     name: Deploy Server
@@ -93,9 +100,6 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
       - name: Download Server Artifact
         uses: actions/download-artifact@v3
         with:
@@ -104,6 +108,11 @@ jobs:
 
       - name: Deploy Server to Render
         run: |
-          curl -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
             -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+
+          if [[ "$RESPONSE" -ne 200 ]]; then
+            echo "Server deployment failed with status: $RESPONSE"
+            exit 1
+          fi
