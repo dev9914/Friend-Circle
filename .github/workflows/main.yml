@@ -1,13 +1,40 @@
-name: Test Workflow
-on: push
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Test Upload
-        uses: actions/upload-artifact@v2
+      - name: Checkout repo
+        uses: actions/checkout@v4  # Use latest v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v3  # Use latest v3
         with:
-          name: test-file
-          path: README.md
+          node-version: 16
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Client
+        run: npm run build
+        working-directory: client  # Ensure this is the correct path
+
+      - name: Upload Client Build
+        uses: actions/upload-artifact@v3  # Use latest v3
+        with:
+          name: client-build
+          path: client/dist
+
+      - name: Download Client Artifact
+        uses: actions/download-artifact@v3  # Use latest v3
+        with:
+          name: client-build
+          path: ./client-build
