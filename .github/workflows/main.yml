@@ -35,10 +35,10 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
 
       - name: Upload Client Build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: client-build
-          path: client/dist  # Ensure this is the correct build output path
+          path: client/dist
 
   build-server:
     name: Build Server
@@ -58,11 +58,16 @@ jobs:
           cd server
           npm install
 
+      - name: Run Server Tests
+        run: |
+          cd server
+          npm test
+
       - name: Upload Server Build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: server-build
-          path: server  # No build step needed for Node.js (unless using TypeScript)
+          path: server  
 
   deploy-client:
     name: Deploy Client
@@ -71,11 +76,22 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Download Client Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: client-build
+          path: ./client-build
+
       - name: Deploy Client to Render
         run: |
-          curl -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
             -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+
+          if [[ "$RESPONSE" -ne 200 ]]; then
+            echo "Client deployment failed with status: $RESPONSE"
+            exit 1
+          fi
 
   deploy-server:
     name: Deploy Server
@@ -84,8 +100,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
 
     steps:
+      - name: Download Server Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: server-build
+          path: ./server-build
+
       - name: Deploy Server to Render
         run: |
-          curl -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
             -H "Accept: application/json" \
-            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}")
+
+          if [[ "$RESPONSE" -ne 200 ]]; then
+            echo "Server deployment failed with status: $RESPONSE"
+            exit 1
+          fi
