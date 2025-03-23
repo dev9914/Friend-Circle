@@ -1,0 +1,91 @@
+name: Build & Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  CI: false
+
+jobs:
+  build-client:
+    name: Build Client
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Client Dependencies
+        run: |
+          cd client
+          npm install
+
+      - name: Build Client
+        run: |
+          cd client
+          npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Upload Client Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: client-build
+          path: client/dist  # Ensure this is the correct build output path
+
+  build-server:
+    name: Build Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Setup Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16
+
+      - name: Install Server Dependencies
+        run: |
+          cd server
+          npm install
+
+      - name: Upload Server Build
+        uses: actions/upload-artifact@v2
+        with:
+          name: server-build
+          path: server  # No build step needed for Node.js (unless using TypeScript)
+
+  deploy-client:
+    name: Deploy Client
+    needs: build-client
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy Client to Render
+        run: |
+          curl -X POST "https://api.render.com/v1/services/srv-cttf1mt2ng1s73c8ph5g/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
+
+  deploy-server:
+    name: Deploy Server
+    needs: build-server
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Deploy Server to Render
+        run: |
+          curl -X POST "https://api.render.com/v1/services/srv-cttf38popnds73ccao6g/deploys" \
+            -H "Accept: application/json" \
+            -H "Authorization: Bearer ${{ secrets.RENDER_API_KEY }}"
