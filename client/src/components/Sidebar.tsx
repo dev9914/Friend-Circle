@@ -16,7 +16,7 @@ const Sidebar = () => {
 <div className="sm:px-6 lg:px-8">
   <div className="flex flex-col">
     <div className=" mt-8">
-      <p className="text-white cursor-pointer text-2xl font-sans font-bold">Make Friends</p>
+      <p className="text-white cursor-pointer text-2xl font-sans font-bold">Friend Zone</p>
     </div>
     <div className="sm:block">
       <div className="flex my-6 flex-col justify-end">
